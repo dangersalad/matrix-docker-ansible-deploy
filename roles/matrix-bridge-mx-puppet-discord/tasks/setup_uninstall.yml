@@ -1,24 +1,24 @@
 ---
 
-- name: Check existence of matrix-mautrix-telegram service
+- name: Check existence of matrix-mx-puppet-discord service
   stat:
-    path: "/etc/systemd/system/matrix-mautrix-telegram.service"
+    path: "/etc/systemd/system/matrix-mx-puppet-discord.service"
   register: matrix_mx_puppet_discord_service_stat
 
-- name: Ensure matrix-mautrix-telegram is stopped
+- name: Ensure matrix-mx-puppet-discord is stopped
   service:
-    name: matrix-mautrix-telegram
+    name: matrix-mx-puppet-discord
     state: stopped
     daemon_reload: yes
   when: "matrix_mx_puppet_discord_service_stat.stat.exists"
 
-- name: Ensure matrix-mautrix-telegram.service doesn't exist
+- name: Ensure matrix-mx-puppet-discord.service doesn't exist
   file:
-    path: "/etc/systemd/system/matrix-mautrix-telegram.service"
+    path: "/etc/systemd/system/matrix-mx-puppet-discord.service"
     state: absent
   when: "matrix_mx_puppet_discord_service_stat.stat.exists"
 
-- name: Ensure systemd reloaded after matrix-mautrix-telegram.service removal
+- name: Ensure systemd reloaded after matrix-mx-puppet-discord.service removal
   service:
     daemon_reload: yes
   when: "matrix_mx_puppet_discord_service_stat.stat.exists"

@@ -1,5 +1,5 @@
 - set_fact:
-    matrix_systemd_services_list: "{{ matrix_systemd_services_list + ['matrix-mautrix-telegram'] }}"
+    matrix_systemd_services_list: "{{ matrix_systemd_services_list + ['matrix-mx-puppet-discord'] }}"
   when: matrix_mx_puppet_discord_enabled|bool
 
 # If the matrix-synapse role is not used, these variables may not exist.
@@ -7,12 +7,12 @@
     matrix_synapse_container_extra_arguments: >
       {{ matrix_synapse_container_extra_arguments|default([]) }}
       +
-      ["--mount type=bind,src={{ matrix_mx_puppet_discord_config_path }}/registration.yaml,dst=/matrix-mautrix-telegram-registration.yaml,ro"]
+      ["--mount type=bind,src={{ matrix_mx_puppet_discord_config_path }}/registration.yaml,dst=/matrix-mx-puppet-discord-registration.yaml,ro"]
 
     matrix_synapse_app_service_config_files: >
       {{ matrix_synapse_app_service_config_files|default([]) }}
       +
-      {{ ["/matrix-mautrix-telegram-registration.yaml"] }}
+      {{ ["/matrix-mx-puppet-discord-registration.yaml"] }}
   when: matrix_mx_puppet_discord_enabled|bool
 
 - block:
@@ -22,7 +22,7 @@
         Trying to append Mautrix Telegram's reverse-proxying configuration to matrix-nginx-proxy,
         but it's pointless since the matrix-nginx-proxy role had already executed.
         To fix this, please change the order of roles in your plabook,
-        so that the matrix-nginx-proxy role would run after the matrix-bridge-mautrix-telegram role.
+        so that the matrix-nginx-proxy role would run after the matrix-bridge-mx-puppet-discord role.
     when: matrix_nginx_proxy_role_executed|default(False)|bool
 
   - name: Generate Mautrix Telegram proxying configuration for matrix-nginx-proxy
@@ -32,7 +32,7 @@
         {% if matrix_nginx_proxy_enabled|default(False) %}
         	{# Use the embedded DNS resolver in Docker containers to discover the service #}
         	resolver 127.0.0.11 valid=5s;
-        	set $backend "matrix-mautrix-telegram:8080";
+        	set $backend "matrix-mx-puppet-discord:8080";
         	proxy_pass http://$backend;
         {% else %}
         	{# Generic configuration for use outside of our container setup #}
@@ -58,6 +58,6 @@
       NOTE: You've enabled the Mautrix Telegram bridge but are not using the matrix-nginx-proxy
       reverse proxy.
       Please make sure that you're proxying the `{{ matrix_mx_puppet_discord_public_endpoint }}`
-      URL endpoint to the matrix-mautrix-telegram container.
+      URL endpoint to the matrix-mx-puppet-discord container.
       You can expose the container's port using the `matrix_mx_puppet_discord_container_http_host_bind_port` variable.
   when: "matrix_mx_puppet_discord_enabled|bool and matrix_nginx_proxy_enabled is not defined"
