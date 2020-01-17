@@ -10,10 +10,10 @@
 
 - name: Ensure Mautrix Telegram image is pulled
   docker_image:
-    name: "{{ matrix_mautrix_telegram_docker_image }}"
+    name: "{{ matrix_mx_puppet_discord_docker_image }}"
     source: "{{ 'pull' if ansible_version.major > 2 or ansible_version.minor > 7 else omit }}"
-    force_source: "{{ matrix_mautrix_telegram_docker_image_force_pull if ansible_version.major > 2 or ansible_version.minor >= 8 else omit }}"
-    force: "{{ omit if ansible_version.major > 2 or ansible_version.minor >= 8 else matrix_mautrix_telegram_docker_image_force_pull }}"
+    force_source: "{{ matrix_mx_puppet_discord_docker_image_force_pull if ansible_version.major > 2 or ansible_version.minor >= 8 else omit }}"
+    force: "{{ omit if ansible_version.major > 2 or ansible_version.minor >= 8 else matrix_mx_puppet_discord_docker_image_force_pull }}"
 
 - name: Ensure Mautrix Telegram paths exist
   file:
@@ -23,14 +23,14 @@
     owner: "{{ matrix_user_username }}"
     group: "{{ matrix_user_username }}"
   with_items:
-    - "{{ matrix_mautrix_telegram_base_path }}"
-    - "{{ matrix_mautrix_telegram_config_path }}"
-    - "{{ matrix_mautrix_telegram_data_path }}"
+    - "{{ matrix_mx_puppet_discord_base_path }}"
+    - "{{ matrix_mx_puppet_discord_config_path }}"
+    - "{{ matrix_mx_puppet_discord_data_path }}"
 
 - name: Check if an old database file already exists
   stat:
-    path: "{{ matrix_mautrix_telegram_base_path }}/mautrix-telegram.db"
-  register: matrix_mautrix_telegram_stat_database
+    path: "{{ matrix_mx_puppet_discord_base_path }}/mautrix-telegram.db"
+  register: matrix_mx_puppet_discord_stat_database
 
 - name: (Data relocation) Ensure matrix-mautrix-telegram.service is stopped
   service:
@@ -38,24 +38,24 @@
     state: stopped
     daemon_reload: yes
   failed_when: false
-  when: "matrix_mautrix_telegram_stat_database.stat.exists"
+  when: "matrix_mx_puppet_discord_stat_database.stat.exists"
 
 - name: (Data relocation) Move mautrix-telegram database file to ./data directory
-  command: "mv {{ matrix_mautrix_telegram_base_path }}/mautrix-telegram.db {{ matrix_mautrix_telegram_data_path }}/mautrix-telegram.db"
-  when: "matrix_mautrix_telegram_stat_database.stat.exists"
+  command: "mv {{ matrix_mx_puppet_discord_base_path }}/mautrix-telegram.db {{ matrix_mx_puppet_discord_data_path }}/mautrix-telegram.db"
+  when: "matrix_mx_puppet_discord_stat_database.stat.exists"
 
 - name: Ensure mautrix-telegram config.yaml installed
   copy:
-    content: "{{ matrix_mautrix_telegram_configuration|to_nice_yaml }}"
-    dest: "{{ matrix_mautrix_telegram_config_path }}/config.yaml"
+    content: "{{ matrix_mx_puppet_discord_configuration|to_nice_yaml }}"
+    dest: "{{ matrix_mx_puppet_discord_config_path }}/config.yaml"
     mode: 0644
     owner: "{{ matrix_user_username }}"
     group: "{{ matrix_user_username }}"
 
 - name: Ensure mautrix-telegram registration.yaml installed
   copy:
-    content: "{{ matrix_mautrix_telegram_registration|to_nice_yaml }}"
-    dest: "{{ matrix_mautrix_telegram_config_path }}/registration.yaml"
+    content: "{{ matrix_mx_puppet_discord_registration|to_nice_yaml }}"
+    dest: "{{ matrix_mx_puppet_discord_config_path }}/registration.yaml"
     mode: 0644
     owner: "{{ matrix_user_username }}"
     group: "{{ matrix_user_username }}"
@@ -65,9 +65,9 @@
     src: "{{ role_path }}/templates/systemd/matrix-mautrix-telegram.service.j2"
     dest: "/etc/systemd/system/matrix-mautrix-telegram.service"
     mode: 0644
-  register: matrix_mautrix_telegram_systemd_service_result
+  register: matrix_mx_puppet_discord_systemd_service_result
 
 - name: Ensure systemd reloaded after matrix-mautrix-telegram.service installation
   service:
     daemon_reload: yes
-  when: "matrix_mautrix_telegram_systemd_service_result.changed"
+  when: "matrix_mx_puppet_discord_systemd_service_result.changed"
