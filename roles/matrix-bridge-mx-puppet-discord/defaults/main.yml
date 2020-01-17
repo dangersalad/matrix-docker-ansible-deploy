@@ -16,7 +16,7 @@ matrix_mx_puppet_discord_api_id: ''
 matrix_mx_puppet_discord_api_hash: ''
 matrix_mx_puppet_discord_bot_token: disabled
 
-# Mautrix telegram public endpoint to log in to telegram
+# MX Puppet Discord public endpoint to log in to telegram
 # Use an uuid so it's not easily discoverable.
 # Example: /741a0483-ba17-4682-9900-30bd7269f1cc
 matrix_mx_puppet_discord_public_endpoint: ''
