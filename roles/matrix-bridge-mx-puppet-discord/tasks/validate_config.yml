@@ -6,9 +6,6 @@
       You need to define a required configuration setting (`{{ item }}`).
   when: "vars[item] == ''"
   with_items:
-    - "matrix_mx_puppet_discord_api_id"
-    - "matrix_mx_puppet_discord_api_hash"
-    - "matrix_mx_puppet_discord_public_endpoint"
     - "matrix_mx_puppet_discord_appservice_token"
     - "matrix_mx_puppet_discord_homeserver_token"
 
