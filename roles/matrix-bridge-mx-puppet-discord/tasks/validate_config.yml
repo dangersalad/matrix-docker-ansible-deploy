@@ -12,7 +12,7 @@
     - "matrix_mx_puppet_discord_appservice_token"
     - "matrix_mx_puppet_discord_homeserver_token"
 
-- name: (Deprecation) Catch and report renamed Telegram variables
+- name: (Deprecation) Catch and report renamed Discord variables
   fail:
     msg: >-
       Your configuration contains a variable, which now has a different name.
