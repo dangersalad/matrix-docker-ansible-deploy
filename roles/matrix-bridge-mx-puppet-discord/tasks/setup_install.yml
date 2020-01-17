@@ -8,14 +8,14 @@
       The matrix-bridge-mx-puppet-discord role needs to execute before the matrix-synapse role.
   when: "matrix_synapse_role_executed|default(False)"
 
-- name: Ensure Mautrix Telegram image is pulled
+- name: Ensure MX Puppet Discord image is pulled
   docker_image:
     name: "{{ matrix_mx_puppet_discord_docker_image }}"
     source: "{{ 'pull' if ansible_version.major > 2 or ansible_version.minor > 7 else omit }}"
     force_source: "{{ matrix_mx_puppet_discord_docker_image_force_pull if ansible_version.major > 2 or ansible_version.minor >= 8 else omit }}"
     force: "{{ omit if ansible_version.major > 2 or ansible_version.minor >= 8 else matrix_mx_puppet_discord_docker_image_force_pull }}"
 
-- name: Ensure Mautrix Telegram paths exist
+- name: Ensure MX Puppet Discord paths exist
   file:
     path: "{{ item }}"
     state: directory
