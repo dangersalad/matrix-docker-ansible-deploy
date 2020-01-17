@@ -1,64 +1,64 @@
 # mautrix-telegram is a Matrix <-> Telegram bridge
 # See: https://github.com/tulir/mautrix-telegram
 
-matrix_mautrix_telegram_enabled: true
+matrix_mx_puppet_discord_enabled: true
 
 # See: https://mau.dev/tulir/mautrix-telegram/container_registry
-matrix_mautrix_telegram_docker_image: "dock.mau.dev/tulir/mautrix-telegram:v0.6.1"
-matrix_mautrix_telegram_docker_image_force_pull: "{{ matrix_mautrix_telegram_docker_image.endswith(':latest') }}"
+matrix_mx_puppet_discord_docker_image: "dock.mau.dev/tulir/mautrix-telegram:v0.6.1"
+matrix_mx_puppet_discord_docker_image_force_pull: "{{ matrix_mx_puppet_discord_docker_image.endswith(':latest') }}"
 
-matrix_mautrix_telegram_base_path: "{{ matrix_base_data_path }}/mautrix-telegram"
-matrix_mautrix_telegram_config_path: "{{ matrix_mautrix_telegram_base_path }}/config"
-matrix_mautrix_telegram_data_path: "{{ matrix_mautrix_telegram_base_path }}/data"
+matrix_mx_puppet_discord_base_path: "{{ matrix_base_data_path }}/mautrix-telegram"
+matrix_mx_puppet_discord_config_path: "{{ matrix_mx_puppet_discord_base_path }}/config"
+matrix_mx_puppet_discord_data_path: "{{ matrix_mx_puppet_discord_base_path }}/data"
 
 # Get your own API keys at https://my.telegram.org/apps
-matrix_mautrix_telegram_api_id: ''
-matrix_mautrix_telegram_api_hash: ''
-matrix_mautrix_telegram_bot_token: disabled
+matrix_mx_puppet_discord_api_id: ''
+matrix_mx_puppet_discord_api_hash: ''
+matrix_mx_puppet_discord_bot_token: disabled
 
 # Mautrix telegram public endpoint to log in to telegram
 # Use an uuid so it's not easily discoverable.
 # Example: /741a0483-ba17-4682-9900-30bd7269f1cc
-matrix_mautrix_telegram_public_endpoint: ''
+matrix_mx_puppet_discord_public_endpoint: ''
 
-matrix_mautrix_telegram_homeserver_address: 'http://matrix-synapse:8008'
-matrix_mautrix_telegram_homeserver_domain: '{{ matrix_domain }}'
-matrix_mautrix_telegram_appservice_address: 'http://matrix-mautrix-telegram:8080'
-matrix_mautrix_telegram_appservice_public_external: 'https://{{ matrix_server_fqn_matrix }}{{ matrix_mautrix_telegram_public_endpoint }}'
+matrix_mx_puppet_discord_homeserver_address: 'http://matrix-synapse:8008'
+matrix_mx_puppet_discord_homeserver_domain: '{{ matrix_domain }}'
+matrix_mx_puppet_discord_appservice_address: 'http://matrix-mautrix-telegram:8080'
+matrix_mx_puppet_discord_appservice_public_external: 'https://{{ matrix_server_fqn_matrix }}{{ matrix_mx_puppet_discord_public_endpoint }}'
 
 # Controls whether the matrix-telegram container exposes its HTTP port (tcp/8080 in the container).
 #
 # Takes an "<ip>:<port>" or "<port>" value (e.g. "127.0.0.1:9006"), or empty string to not expose.
-matrix_mautrix_telegram_container_http_host_bind_port: ''
+matrix_mx_puppet_discord_container_http_host_bind_port: ''
 
 # A list of extra arguments to pass to the container
-matrix_mautrix_telegram_container_extra_arguments: []
+matrix_mx_puppet_discord_container_extra_arguments: []
 
 # List of systemd services that matrix-mautrix-telegram.service depends on.
-matrix_mautrix_telegram_systemd_required_services_list: ['docker.service']
+matrix_mx_puppet_discord_systemd_required_services_list: ['docker.service']
 
 # List of systemd services that matrix-mautrix-telegram.service wants
-matrix_mautrix_telegram_systemd_wanted_services_list: []
+matrix_mx_puppet_discord_systemd_wanted_services_list: []
 
-matrix_mautrix_telegram_appservice_token: ''
-matrix_mautrix_telegram_homeserver_token: ''
+matrix_mx_puppet_discord_appservice_token: ''
+matrix_mx_puppet_discord_homeserver_token: ''
 
 # Can be set to enable automatic double-puppeting via Shared Secret Auth (https://github.com/devture/matrix-synapse-shared-secret-auth).
-matrix_mautrix_telegram_login_shared_secret: ''
+matrix_mx_puppet_discord_login_shared_secret: ''
 
 # Default configuration template which covers the generic use case.
 # You can customize it by controlling the various variables inside it.
 #
-# For a more advanced customization, you can extend the default (see `matrix_mautrix_telegram_configuration_extension_yaml`)
+# For a more advanced customization, you can extend the default (see `matrix_mx_puppet_discord_configuration_extension_yaml`)
 # or completely replace this variable with your own template.
-matrix_mautrix_telegram_configuration_yaml: |
+matrix_mx_puppet_discord_configuration_yaml: |
   #jinja2: lstrip_blocks: "True"
   # Homeserver details
   homeserver:
       # The address that this appservice can use to connect to the homeserver.
-      address: {{ matrix_mautrix_telegram_homeserver_address }}
+      address: {{ matrix_mx_puppet_discord_homeserver_address }}
       # The domain of the homeserver (for MXIDs, etc).
-      domain: {{ matrix_mautrix_telegram_homeserver_domain }}
+      domain: {{ matrix_mx_puppet_discord_homeserver_domain }}
       # Whether or not to verify the SSL certificate of the homeserver.
       # Only applies if address starts with https://
       verify_ssl: true
@@ -67,7 +67,7 @@ matrix_mautrix_telegram_configuration_yaml: |
   # Changing these values requires regeneration of the registration.
   appservice:
       # The address that the homeserver can use to connect to this appservice.
-      address: {{ matrix_mautrix_telegram_appservice_address }}
+      address: {{ matrix_mx_puppet_discord_appservice_address }}
 
       # The hostname and port where this appservice should listen.
       hostname: 0.0.0.0
@@ -90,10 +90,10 @@ matrix_mautrix_telegram_configuration_yaml: |
           # Whether or not the public-facing endpoints should be enabled.
           enabled: true
           # The prefix to use in the public-facing endpoints.
-          prefix: {{ matrix_mautrix_telegram_public_endpoint }}
+          prefix: {{ matrix_mx_puppet_discord_public_endpoint }}
           # The base URL where the public-facing endpoints are available. The prefix is not added
           # implicitly.
-          external: {{ matrix_mautrix_telegram_appservice_public_external }}
+          external: {{ matrix_mx_puppet_discord_appservice_public_external }}
 
       # Provisioning API part of the web server for automated portal creation and fetching information.
       # Used by things like Dimension (https://dimension.t2bot.io/).
@@ -116,8 +116,8 @@ matrix_mautrix_telegram_configuration_yaml: |
       bot_avatar: mxc://maunium.net/tJCRmUyJDsgRNgqhOgoiHWbX
 
       # Authentication tokens for AS <-> HS communication.
-      as_token: "{{ matrix_mautrix_telegram_appservice_token }}"
-      hs_token: "{{ matrix_mautrix_telegram_homeserver_token }}"
+      as_token: "{{ matrix_mx_puppet_discord_appservice_token }}"
+      hs_token: "{{ matrix_mx_puppet_discord_homeserver_token }}"
 
   # Bridge config
   bridge:
@@ -195,7 +195,7 @@ matrix_mautrix_telegram_configuration_yaml: |
       # If set, custom puppets will be enabled automatically for local users
       # instead of users having to find an access token and run `login-matrix`
       # manually.
-      login_shared_secret: {{ matrix_mautrix_telegram_login_shared_secret|to_json }}
+      login_shared_secret: {{ matrix_mx_puppet_discord_login_shared_secret|to_json }}
       # Set to false to disable link previews in messages sent to Telegram.
       telegram_link_preview: true
       # Use inline images instead of a separate message for the caption.
@@ -318,7 +318,7 @@ matrix_mautrix_telegram_configuration_yaml: |
       #   domain - All users on that homeserver
       #     mxid - Specific user
       permissions:
-        '{{ matrix_mautrix_telegram_homeserver_domain }}': full
+        '{{ matrix_mx_puppet_discord_homeserver_domain }}': full
 
       # Options related to the message relay Telegram bot.
       relaybot:
@@ -350,10 +350,10 @@ matrix_mautrix_telegram_configuration_yaml: |
   # Telegram config
   telegram:
       # Get your own API keys at https://my.telegram.org/apps
-      api_id: {{ matrix_mautrix_telegram_api_id }}
-      api_hash: {{ matrix_mautrix_telegram_api_hash }}
+      api_id: {{ matrix_mx_puppet_discord_api_id }}
+      api_hash: {{ matrix_mx_puppet_discord_api_hash }}
       # (Optional) Create your own bot at https://t.me/BotFather
-      bot_token: {{ matrix_mautrix_telegram_bot_token }}
+      bot_token: {{ matrix_mx_puppet_discord_bot_token }}
 
       # Telethon connection options.
       connection:
@@ -439,34 +439,34 @@ matrix_mautrix_telegram_configuration_yaml: |
           handlers: [console]
 
 
-matrix_mautrix_telegram_configuration_extension_yaml: |
+matrix_mx_puppet_discord_configuration_extension_yaml: |
   # Your custom YAML configuration goes here.
-  # This configuration extends the default starting configuration (`matrix_mautrix_telegram_configuration_yaml`).
+  # This configuration extends the default starting configuration (`matrix_mx_puppet_discord_configuration_yaml`).
   #
   # You can override individual variables from the default configuration, or introduce new ones.
   #
   # If you need something more special, you can take full control by
-  # completely redefining `matrix_mautrix_telegram_configuration_yaml`.
+  # completely redefining `matrix_mx_puppet_discord_configuration_yaml`.
 
-matrix_mautrix_telegram_configuration_extension: "{{ matrix_mautrix_telegram_configuration_extension_yaml|from_yaml if matrix_mautrix_telegram_configuration_extension_yaml|from_yaml is mapping else {} }}"
+matrix_mx_puppet_discord_configuration_extension: "{{ matrix_mx_puppet_discord_configuration_extension_yaml|from_yaml if matrix_mx_puppet_discord_configuration_extension_yaml|from_yaml is mapping else {} }}"
 
 # Holds the final configuration (a combination of the default and its extension).
-# You most likely don't need to touch this variable. Instead, see `matrix_mautrix_telegram_configuration_yaml`.
-matrix_mautrix_telegram_configuration: "{{ matrix_mautrix_telegram_configuration_yaml|from_yaml|combine(matrix_mautrix_telegram_configuration_extension, recursive=True) }}"
+# You most likely don't need to touch this variable. Instead, see `matrix_mx_puppet_discord_configuration_yaml`.
+matrix_mx_puppet_discord_configuration: "{{ matrix_mx_puppet_discord_configuration_yaml|from_yaml|combine(matrix_mx_puppet_discord_configuration_extension, recursive=True) }}"
 
-matrix_mautrix_telegram_registration_yaml: |
+matrix_mx_puppet_discord_registration_yaml: |
   id: telegram
-  as_token: "{{ matrix_mautrix_telegram_appservice_token }}"
-  hs_token: "{{ matrix_mautrix_telegram_homeserver_token }}"
+  as_token: "{{ matrix_mx_puppet_discord_appservice_token }}"
+  hs_token: "{{ matrix_mx_puppet_discord_homeserver_token }}"
   namespaces:
       users:
       - exclusive: true
-        regex: '^@telegram_.+:{{ matrix_mautrix_telegram_homeserver_domain|regex_escape }}$'
+        regex: '^@telegram_.+:{{ matrix_mx_puppet_discord_homeserver_domain|regex_escape }}$'
       aliases:
       - exclusive: true
-        regex: '^#telegram_.+:{{ matrix_mautrix_telegram_homeserver_domain|regex_escape }}$'
-  url: {{ matrix_mautrix_telegram_appservice_address }}
+        regex: '^#telegram_.+:{{ matrix_mx_puppet_discord_homeserver_domain|regex_escape }}$'
+  url: {{ matrix_mx_puppet_discord_appservice_address }}
   sender_localpart: telegrambot
   rate_limited: false
 
-matrix_mautrix_telegram_registration: "{{ matrix_mautrix_telegram_registration_yaml|from_yaml }}"
+matrix_mx_puppet_discord_registration: "{{ matrix_mx_puppet_discord_registration_yaml|from_yaml }}"
