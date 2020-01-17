@@ -1,13 +1,13 @@
-# mautrix-telegram is a Matrix <-> Telegram bridge
-# See: https://github.com/tulir/mautrix-telegram
+# mx-puppet-discord is a Matrix <-> Telegram bridge
+# See: https://github.com/tulir/mx-puppet-discord
 
 matrix_mx_puppet_discord_enabled: true
 
-# See: https://mau.dev/tulir/mautrix-telegram/container_registry
-matrix_mx_puppet_discord_docker_image: "dock.mau.dev/tulir/mautrix-telegram:v0.6.1"
+# See: https://mau.dev/tulir/mx-puppet-discord/container_registry
+matrix_mx_puppet_discord_docker_image: "dock.mau.dev/tulir/mx-puppet-discord:v0.6.1"
 matrix_mx_puppet_discord_docker_image_force_pull: "{{ matrix_mx_puppet_discord_docker_image.endswith(':latest') }}"
 
-matrix_mx_puppet_discord_base_path: "{{ matrix_base_data_path }}/mautrix-telegram"
+matrix_mx_puppet_discord_base_path: "{{ matrix_base_data_path }}/mx-puppet-discord"
 matrix_mx_puppet_discord_config_path: "{{ matrix_mx_puppet_discord_base_path }}/config"
 matrix_mx_puppet_discord_data_path: "{{ matrix_mx_puppet_discord_base_path }}/data"
 
@@ -23,7 +23,7 @@ matrix_mx_puppet_discord_public_endpoint: ''
 
 matrix_mx_puppet_discord_homeserver_address: 'http://matrix-synapse:8008'
 matrix_mx_puppet_discord_homeserver_domain: '{{ matrix_domain }}'
-matrix_mx_puppet_discord_appservice_address: 'http://matrix-mautrix-telegram:8080'
+matrix_mx_puppet_discord_appservice_address: 'http://matrix-mx-puppet-discord:8080'
 matrix_mx_puppet_discord_appservice_public_external: 'https://{{ matrix_server_fqn_matrix }}{{ matrix_mx_puppet_discord_public_endpoint }}'
 
 # Controls whether the matrix-telegram container exposes its HTTP port (tcp/8080 in the container).
@@ -34,10 +34,10 @@ matrix_mx_puppet_discord_container_http_host_bind_port: ''
 # A list of extra arguments to pass to the container
 matrix_mx_puppet_discord_container_extra_arguments: []
 
-# List of systemd services that matrix-mautrix-telegram.service depends on.
+# List of systemd services that matrix-mx-puppet-discord.service depends on.
 matrix_mx_puppet_discord_systemd_required_services_list: ['docker.service']
 
-# List of systemd services that matrix-mautrix-telegram.service wants
+# List of systemd services that matrix-mx-puppet-discord.service wants
 matrix_mx_puppet_discord_systemd_wanted_services_list: []
 
 matrix_mx_puppet_discord_appservice_token: ''
@@ -81,7 +81,7 @@ matrix_mx_puppet_discord_configuration_yaml: |
       # Format examples:
       #   SQLite:   sqlite:///filename.db
       #   Postgres: postgres://username:password@hostname/dbname
-      database: sqlite:////data/mautrix-telegram.db
+      database: sqlite:////data/mx-puppet-discord.db
 
       # Public part of web server for out-of-Matrix interaction with the bridge.
       # Used for things like login if the user wants to make sure the 2FA password isn't stored in
@@ -383,7 +383,7 @@ matrix_mx_puppet_discord_configuration_yaml: |
           device_model: auto
           # "auto" = Telethon version.
           system_version: auto
-          # "auto" = mautrix-telegram version.
+          # "auto" = mx-puppet-discord version.
           app_version: auto
           lang_code: en
           system_lang_code: en
