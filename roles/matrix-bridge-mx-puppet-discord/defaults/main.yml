@@ -11,12 +11,12 @@ matrix_mx_puppet_discord_base_path: "{{ matrix_base_data_path }}/mx-puppet-disco
 matrix_mx_puppet_discord_config_path: "{{ matrix_mx_puppet_discord_base_path }}/config"
 matrix_mx_puppet_discord_data_path: "{{ matrix_mx_puppet_discord_base_path }}/data"
 
-# Get your own API keys at https://my.telegram.org/apps
+# Get your own API keys at https://my.discord.org/apps
 matrix_mx_puppet_discord_api_id: ''
 matrix_mx_puppet_discord_api_hash: ''
 matrix_mx_puppet_discord_bot_token: disabled
 
-# MX Puppet Discord public endpoint to log in to telegram
+# MX Puppet Discord public endpoint to log in to discord
 # Use an uuid so it's not easily discoverable.
 # Example: /741a0483-ba17-4682-9900-30bd7269f1cc
 matrix_mx_puppet_discord_public_endpoint: ''
@@ -26,7 +26,7 @@ matrix_mx_puppet_discord_homeserver_domain: '{{ matrix_domain }}'
 matrix_mx_puppet_discord_appservice_address: 'http://matrix-mx-puppet-discord:8080'
 matrix_mx_puppet_discord_appservice_public_external: 'https://{{ matrix_server_fqn_matrix }}{{ matrix_mx_puppet_discord_public_endpoint }}'
 
-# Controls whether the matrix-telegram container exposes its HTTP port (tcp/8080 in the container).
+# Controls whether the matrix-discord container exposes its HTTP port (tcp/8080 in the container).
 #
 # Takes an "<ip>:<port>" or "<port>" value (e.g. "127.0.0.1:9006"), or empty string to not expose.
 matrix_mx_puppet_discord_container_http_host_bind_port: ''
@@ -107,9 +107,9 @@ matrix_mx_puppet_discord_configuration_yaml: |
           shared_secret: generate
 
       # The unique ID of this appservice.
-      id: telegram
+      id: discord
       # Username of the appservice bot.
-      bot_username: telegrambot
+      bot_username: discordbot
       # Display name and avatar for bot. Set to "remove" to remove display name/avatar, leave empty
       # to leave display name/avatar as-is.
       bot_displayname: Telegram bridge bot
@@ -123,10 +123,10 @@ matrix_mx_puppet_discord_configuration_yaml: |
   bridge:
       # Localpart template of MXIDs for Telegram users.
       # {userid} is replaced with the user ID of the Telegram user.
-      username_template: "telegram_{userid}"
+      username_template: "discord_{userid}"
       # Localpart template of room aliases for Telegram portal rooms.
       # {groupname} is replaced with the name part of the public channel/group invite link ( https://t.me/{} )
-      alias_template: "telegram_{groupname}"
+      alias_template: "discord_{groupname}"
       # Displayname template for Telegram users.
       # {displayname} is replaced with the display name of the Telegram user.
       displayname_template: "{displayname} (Telegram)"
@@ -174,7 +174,7 @@ matrix_mx_puppet_discord_configuration_yaml: |
       sync_direct_chats: false
       # The maximum number of simultaneous Telegram deletions to handle.
       # A large number of simultaneous redactions could put strain on your homeserver.
-      max_telegram_delete: 10
+      max_discord_delete: 10
       # Whether or not to automatically sync the Matrix room state (mostly unpuppeted displaynames)
       # at startup and when creating a bridge.
       sync_matrix_state: true
@@ -197,7 +197,7 @@ matrix_mx_puppet_discord_configuration_yaml: |
       # manually.
       login_shared_secret: {{ matrix_mx_puppet_discord_login_shared_secret|to_json }}
       # Set to false to disable link previews in messages sent to Telegram.
-      telegram_link_preview: true
+      discord_link_preview: true
       # Use inline images instead of a separate message for the caption.
       # N.B. Inline images are not supported on all clients (e.g. Riot iOS).
       inline_images: false
@@ -272,7 +272,7 @@ matrix_mx_puppet_discord_configuration_yaml: |
           m.video: "<b>$sender_displayname</b> sent a video: $message"
           m.location: "<b>$sender_displayname</b> sent a location: $message"
       # Telegram doesn't have built-in emotes, this field specifies how m.emote's from authenticated
-      # users are sent to telegram. All fields in message_formats are supported. Additionally, the
+      # users are sent to discord. All fields in message_formats are supported. Additionally, the
       # Telegram user info is available in the following variables:
       #    $displayname - Telegram displayname
       #    $username    - Telegram username (may not exist)
@@ -348,8 +348,8 @@ matrix_mx_puppet_discord_configuration_yaml: |
           whitelist: []
 
   # Telegram config
-  telegram:
-      # Get your own API keys at https://my.telegram.org/apps
+  discord:
+      # Get your own API keys at https://my.discord.org/apps
       api_id: {{ matrix_mx_puppet_discord_api_id }}
       api_hash: {{ matrix_mx_puppet_discord_api_hash }}
       # (Optional) Create your own bot at https://t.me/BotFather
@@ -455,18 +455,18 @@ matrix_mx_puppet_discord_configuration_extension: "{{ matrix_mx_puppet_discord_c
 matrix_mx_puppet_discord_configuration: "{{ matrix_mx_puppet_discord_configuration_yaml|from_yaml|combine(matrix_mx_puppet_discord_configuration_extension, recursive=True) }}"
 
 matrix_mx_puppet_discord_registration_yaml: |
-  id: telegram
+  id: discord
   as_token: "{{ matrix_mx_puppet_discord_appservice_token }}"
   hs_token: "{{ matrix_mx_puppet_discord_homeserver_token }}"
   namespaces:
       users:
       - exclusive: true
-        regex: '^@telegram_.+:{{ matrix_mx_puppet_discord_homeserver_domain|regex_escape }}$'
+        regex: '^@discord_.+:{{ matrix_mx_puppet_discord_homeserver_domain|regex_escape }}$'
       aliases:
       - exclusive: true
-        regex: '^#telegram_.+:{{ matrix_mx_puppet_discord_homeserver_domain|regex_escape }}$'
+        regex: '^#discord_.+:{{ matrix_mx_puppet_discord_homeserver_domain|regex_escape }}$'
   url: {{ matrix_mx_puppet_discord_appservice_address }}
-  sender_localpart: telegrambot
+  sender_localpart: discordbot
   rate_limited: false
 
 matrix_mx_puppet_discord_registration: "{{ matrix_mx_puppet_discord_registration_yaml|from_yaml }}"
