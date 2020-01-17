@@ -6,11 +6,11 @@
       You need to define a required configuration setting (`{{ item }}`).
   when: "vars[item] == ''"
   with_items:
-    - "matrix_mautrix_telegram_api_id"
-    - "matrix_mautrix_telegram_api_hash"
-    - "matrix_mautrix_telegram_public_endpoint"
-    - "matrix_mautrix_telegram_appservice_token"
-    - "matrix_mautrix_telegram_homeserver_token"
+    - "matrix_mx_puppet_discord_api_id"
+    - "matrix_mx_puppet_discord_api_hash"
+    - "matrix_mx_puppet_discord_public_endpoint"
+    - "matrix_mx_puppet_discord_appservice_token"
+    - "matrix_mx_puppet_discord_homeserver_token"
 
 - name: (Deprecation) Catch and report renamed Telegram variables
   fail:
@@ -19,4 +19,4 @@
       Please change your configuration to rename the variable (`{{ item.old }}` -> `{{ item.new }}`).
   when: "item.old in vars"
   with_items:
-    - {'old': 'matrix_mautrix_telegram_container_exposed_port_number', 'new': '<superseded by matrix_mautrix_telegram_container_http_host_bind_port>'}
+    - {'old': 'matrix_mx_puppet_discord_container_exposed_port_number', 'new': '<superseded by matrix_mx_puppet_discord_container_http_host_bind_port>'}
