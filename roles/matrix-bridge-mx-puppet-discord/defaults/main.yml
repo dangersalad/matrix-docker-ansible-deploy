@@ -58,6 +58,9 @@ matrix_mx_puppet_discord_configuration_yaml: |
     domain: {{ matrix_mx_puppet_discord_homeserver_domain }}
     # Reachable URL of the Matrix homeserver
     homeserverUrl: {{ matrix_mx_puppet_discord_homeserver_address }}
+    # shared secret for double puppeting
+    loginSharedSecretMap:
+      {{ matrix_mx_puppet_discord_homeserver_domain }}: {{ matrix_mx_puppet_discord_login_shared_secret|to_json }}
   
   presence:
     # Bridge Discord online/offline status
