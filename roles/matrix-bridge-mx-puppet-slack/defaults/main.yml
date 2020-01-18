@@ -21,6 +21,10 @@ matrix_mx_puppet_slack_homeserver_domain: '{{ matrix_domain }}'
 matrix_mx_puppet_slack_appservice_address: 'http://matrix-mx-puppet-slack:8080'
 matrix_mx_puppet_slack_appservice_public_external: 'https://{{ matrix_server_fqn_matrix }}{{ matrix_mx_puppet_slack_public_endpoint }}'
 
+matrix_mx_puppet_slack_oauth_enabled: false
+matrix_mx_puppet_slack_oauth_client_id: ''
+matrix_mx_puppet_slack_oauth_client_secret: ''
+
 # Controls whether the matrix-slack container exposes its HTTP port (tcp/8080 in the container).
 #
 # Takes an "<ip>:<port>" or "<port>" value (e.g. "127.0.0.1:9006"), or empty string to not expose.
@@ -59,8 +63,21 @@ matrix_mx_puppet_slack_configuration_yaml: |
     # Reachable URL of the Matrix homeserver
     homeserverUrl: {{ matrix_mx_puppet_slack_homeserver_address }}
   
+  # Slack OAuth settings. Create a slack app at https://api.slack.com/apps
+  oauth:
+    enabled: {{ matrix_mx_puppet_slack_oauth_enabled }}
+    # Slack app credentials.
+    # N.B. This must be quoted so YAML wouldn't parse it as a float.
+    clientId: "{{ matrix_mx_puppet_slack_oauth_client_id }}"
+    clientSecret: {{ matrix_mx_puppet_slack_oauth_client_secret }}
+    # Path where to listen for OAuth redirect callbacks.
+    redirectPath: {{ matrix_mx_puppet_slack_public_endpoint }}
+    # Set up proxying from https://your.domain/redirect_path to http://bindAddress:port/redirect_path,
+    # then set this field and the Slack app redirect URI field to the former.
+    redirectUri: {{ matrix_mx_puppet_slack_appservice_public_external }}
+  
   presence:
-    # Bridge Slack online/offline status
+    # Bridge Discord online/offline status
     enabled: true
     # How often to send status to the homeserver in milliseconds
     interval: 500
@@ -74,8 +91,8 @@ matrix_mx_puppet_slack_configuration_yaml: |
       - '@.*:{{ matrix_mx_puppet_slack_homeserver_domain | regex_escape }}'
       # Allow anyone
       #- ".*"
-    # Regex of Matrix IDs forbidden from using the puppet bridge
-    #blacklist:
+      # Regex of Matrix IDs forbidden from using the puppet bridge
+      #blacklist:
       # Disallow a specific user
       #- "@user:server\\.com"
       # Disallow users on a specific homeserver
@@ -103,7 +120,7 @@ matrix_mx_puppet_slack_configuration_yaml: |
     # Log files are rotated daily by default
     files:
       # Log file path
-      - file: "bridge.log"
+      - file: "/data/bridge.log"
         # Log level for this file
         # Allowed values starting with most verbose:
         # silly, debug, verbose, info, warn, error
@@ -118,7 +135,6 @@ matrix_mx_puppet_slack_configuration_yaml: |
         # number of bytes, or units of kb, mb, and gb. If using the units, add
         # 'k', 'm', or 'g' as the suffix
         maxSize: 50m
-  
   
 matrix_mx_puppet_slack_configuration_extension_yaml: |
   # Your custom YAML configuration goes here.
@@ -142,10 +158,10 @@ matrix_mx_puppet_slack_registration_yaml: |
   namespaces:
       users:
       - exclusive: true
-        regex: '^@slack_.+:{{ matrix_mx_puppet_slack_homeserver_domain|regex_escape }}$'
+        regex: '@slack_.*:{{ matrix_mx_puppet_slack_homeserver_domain|regex_escape }}$'
       aliases:
       - exclusive: true
-        regex: '^#slack_.+:{{ matrix_mx_puppet_slack_homeserver_domain|regex_escape }}$'
+        regex: '#slack_.*:{{ matrix_mx_puppet_slack_homeserver_domain|regex_escape }}$'
   url: {{ matrix_mx_puppet_slack_appservice_address }}
   sender_localpart: slackbot
   rate_limited: false
