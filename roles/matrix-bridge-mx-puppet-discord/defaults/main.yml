@@ -103,7 +103,7 @@ matrix_mx_puppet_discord_configuration_yaml: |
     # Log files are rotated daily by default
     files:
       # Log file path
-      - file: "bridge.log"
+      - file: "/data/bridge.log"
         # Log level for this file
         # Allowed values starting with most verbose:
         # silly, debug, verbose, info, warn, error
@@ -142,10 +142,10 @@ matrix_mx_puppet_discord_registration_yaml: |
   namespaces:
       users:
       - exclusive: true
-        regex: '^@discord_.+:{{ matrix_mx_puppet_discord_homeserver_domain|regex_escape }}$'
+        regex: '@discord_.*:{{ matrix_mx_puppet_discord_homeserver_domain|regex_escape }}$'
       aliases:
       - exclusive: true
-        regex: '^#discord_.+:{{ matrix_mx_puppet_discord_homeserver_domain|regex_escape }}$'
+        regex: '#discord_.*:{{ matrix_mx_puppet_discord_homeserver_domain|regex_escape }}$'
   url: {{ matrix_mx_puppet_discord_appservice_address }}
   sender_localpart: discordbot
   rate_limited: false
