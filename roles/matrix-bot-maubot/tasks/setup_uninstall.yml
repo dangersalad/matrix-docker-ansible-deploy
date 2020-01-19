@@ -1,24 +1,24 @@
 ---
 
-- name: Check existence of matrix-mx-puppet-discord service
+- name: Check existence of matrix-maubot service
   stat:
-    path: "/etc/systemd/system/matrix-mx-puppet-discord.service"
-  register: matrix_mx_puppet_discord_service_stat
+    path: "/etc/systemd/system/matrix-maubot.service"
+  register: matrix_maubot_service_stat
 
-- name: Ensure matrix-mx-puppet-discord is stopped
+- name: Ensure matrix-maubot is stopped
   service:
-    name: matrix-mx-puppet-discord
+    name: matrix-maubot
     state: stopped
     daemon_reload: yes
-  when: "matrix_mx_puppet_discord_service_stat.stat.exists"
+  when: "matrix_maubot_service_stat.stat.exists"
 
-- name: Ensure matrix-mx-puppet-discord.service doesn't exist
+- name: Ensure matrix-maubot.service doesn't exist
   file:
-    path: "/etc/systemd/system/matrix-mx-puppet-discord.service"
+    path: "/etc/systemd/system/matrix-maubot.service"
     state: absent
-  when: "matrix_mx_puppet_discord_service_stat.stat.exists"
+  when: "matrix_maubot_service_stat.stat.exists"
 
-- name: Ensure systemd reloaded after matrix-mx-puppet-discord.service removal
+- name: Ensure systemd reloaded after matrix-maubot.service removal
   service:
     daemon_reload: yes
-  when: "matrix_mx_puppet_discord_service_stat.stat.exists"
+  when: "matrix_maubot_service_stat.stat.exists"
