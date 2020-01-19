@@ -6,8 +6,8 @@
       You need to define a required configuration setting (`{{ item }}`).
   when: "vars[item] == ''"
   with_items:
-    - "matrix_mx_puppet_discord_appservice_token"
-    - "matrix_mx_puppet_discord_homeserver_token"
+    - "matrix_maubot_appservice_token"
+    - "matrix_maubot_homeserver_token"
 
 - name: (Deprecation) Catch and report renamed Discord variables
   fail:
@@ -16,4 +16,4 @@
       Please change your configuration to rename the variable (`{{ item.old }}` -> `{{ item.new }}`).
   when: "item.old in vars"
   with_items:
-    - {'old': 'matrix_mx_puppet_discord_container_exposed_port_number', 'new': '<superseded by matrix_mx_puppet_discord_container_http_host_bind_port>'}
+    - {'old': 'matrix_maubot_container_exposed_port_number', 'new': '<superseded by matrix_maubot_container_http_host_bind_port>'}
