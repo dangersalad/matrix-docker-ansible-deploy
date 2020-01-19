@@ -1,0 +1,156 @@
+# mx-puppet-discord is a Matrix <-> Discord bridge
+# See: https://github.com/tulir/mx-puppet-discord
+
+matrix_mx_puppet_discord_enabled: true
+
+# See: https://mau.dev/tulir/mx-puppet-discord/container_registry
+matrix_mx_puppet_discord_docker_image: "dangersalad/mx-puppet-discord:latest"
+matrix_mx_puppet_discord_docker_image_force_pull: "{{ matrix_mx_puppet_discord_docker_image.endswith(':latest') }}"
+
+matrix_mx_puppet_discord_base_path: "{{ matrix_base_data_path }}/mx-puppet-discord"
+matrix_mx_puppet_discord_config_path: "{{ matrix_mx_puppet_discord_base_path }}/config"
+matrix_mx_puppet_discord_data_path: "{{ matrix_mx_puppet_discord_base_path }}/data"
+
+# MX Puppet Discord public endpoint to log in to discord
+# Use an uuid so it's not easily discoverable.
+# Example: /741a0483-ba17-4682-9900-30bd7269f1cc
+matrix_mx_puppet_discord_public_endpoint: ''
+
+matrix_mx_puppet_discord_homeserver_address: 'http://matrix-synapse:8008'
+matrix_mx_puppet_discord_homeserver_domain: '{{ matrix_domain }}'
+matrix_mx_puppet_discord_appservice_address: 'http://matrix-mx-puppet-discord:8080'
+matrix_mx_puppet_discord_appservice_public_external: 'https://{{ matrix_server_fqn_matrix }}{{ matrix_mx_puppet_discord_public_endpoint }}'
+
+# Controls whether the matrix-discord container exposes its HTTP port (tcp/8080 in the container).
+#
+# Takes an "<ip>:<port>" or "<port>" value (e.g. "127.0.0.1:9006"), or empty string to not expose.
+matrix_mx_puppet_discord_container_http_host_bind_port: ''
+
+# A list of extra arguments to pass to the container
+matrix_mx_puppet_discord_container_extra_arguments: []
+
+# List of systemd services that matrix-mx-puppet-discord.service depends on.
+matrix_mx_puppet_discord_systemd_required_services_list: ['docker.service']
+
+# List of systemd services that matrix-mx-puppet-discord.service wants
+matrix_mx_puppet_discord_systemd_wanted_services_list: []
+
+matrix_mx_puppet_discord_appservice_token: ''
+matrix_mx_puppet_discord_homeserver_token: ''
+
+# Can be set to enable automatic double-puppeting via Shared Secret Auth (https://github.com/devture/matrix-synapse-shared-secret-auth).
+matrix_mx_puppet_discord_login_shared_secret: ''
+
+# Default configuration template which covers the generic use case.
+# You can customize it by controlling the various variables inside it.
+#
+# For a more advanced customization, you can extend the default (see `matrix_mx_puppet_discord_configuration_extension_yaml`)
+# or completely replace this variable with your own template.
+matrix_mx_puppet_discord_configuration_yaml: |
+  #jinja2: lstrip_blocks: "True"
+  bridge:
+    # Port to host the bridge on
+    # Used for communication between the homeserver and the bridge
+    port: 8080
+    # The host connections to the bridge's webserver are allowed from
+    bindAddress: 0.0.0.0
+    # Public domain of the homeserver
+    domain: {{ matrix_mx_puppet_discord_homeserver_domain }}
+    # Reachable URL of the Matrix homeserver
+    homeserverUrl: {{ matrix_mx_puppet_discord_homeserver_address }}
+    # shared secret for double puppeting
+    loginSharedSecretMap:
+      {{ matrix_mx_puppet_discord_homeserver_domain }}: {{ matrix_mx_puppet_discord_login_shared_secret|to_json }}
+  
+  presence:
+    # Bridge Discord online/offline status
+    enabled: true
+    # How often to send status to the homeserver in milliseconds
+    interval: 500
+  
+  provisioning:
+    # Regex of Matrix IDs allowed to use the puppet bridge
+    whitelist:
+      # Allow a specific user
+      #- "@user:server\\.com"
+      # Allow users on a specific homeserver
+      - '@.*:{{ matrix_mx_puppet_discord_homeserver_domain | regex_escape }}'
+      # Allow anyone
+      #- ".*"
+    # Regex of Matrix IDs forbidden from using the puppet bridge
+    #blacklist:
+      # Disallow a specific user
+      #- "@user:server\\.com"
+      # Disallow users on a specific homeserver
+      #- "@.*:yourserver\\.com"
+  
+  database:
+    # Use Postgres as a database backend
+    # If set, will be used instead of SQLite3
+    # Connection string to connect to the Postgres instance
+    # with username "user", password "pass", host "localhost" and database name "dbname".
+    # Modify each value as necessary
+    #connString: "postgres://user:pass@localhost/dbname?sslmode=disable"
+    # Use SQLite3 as a database backend
+    # The name of the database file
+    filename: /data/mx-puppet-discord.db
+  
+  logging:
+    # Log level of console output
+    # Allowed values starting with most verbose:
+    # silly, verbose, info, warn, error
+    console: info
+    # Date and time formatting
+    lineDateFormat: MMM-D HH:mm:ss.SSS
+    # Logging files
+    # Log files are rotated daily by default
+    files:
+      # Log file path
+      - file: "/data/bridge.log"
+        # Log level for this file
+        # Allowed values starting with most verbose:
+        # silly, debug, verbose, info, warn, error
+        level: info
+        # Date and time formatting
+        datePattern: YYYY-MM-DD
+        # Maximum number of logs to keep.
+        # This can be a number of files or number of days.
+        # If using days, add 'd' as a suffix
+        maxFiles: 14d
+        # Maximum size of the file after which it will rotate. This can be a
+        # number of bytes, or units of kb, mb, and gb. If using the units, add
+        # 'k', 'm', or 'g' as the suffix
+        maxSize: 50m
+  
+  
+matrix_mx_puppet_discord_configuration_extension_yaml: |
+  # Your custom YAML configuration goes here.
+  # This configuration extends the default starting configuration (`matrix_mx_puppet_discord_configuration_yaml`).
+  #
+  # You can override individual variables from the default configuration, or introduce new ones.
+  #
+  # If you need something more special, you can take full control by
+  # completely redefining `matrix_mx_puppet_discord_configuration_yaml`.
+
+matrix_mx_puppet_discord_configuration_extension: "{{ matrix_mx_puppet_discord_configuration_extension_yaml|from_yaml if matrix_mx_puppet_discord_configuration_extension_yaml|from_yaml is mapping else {} }}"
+
+# Holds the final configuration (a combination of the default and its extension).
+# You most likely don't need to touch this variable. Instead, see `matrix_mx_puppet_discord_configuration_yaml`.
+matrix_mx_puppet_discord_configuration: "{{ matrix_mx_puppet_discord_configuration_yaml|from_yaml|combine(matrix_mx_puppet_discord_configuration_extension, recursive=True) }}"
+
+matrix_mx_puppet_discord_registration_yaml: |
+  id: discord
+  as_token: "{{ matrix_mx_puppet_discord_appservice_token }}"
+  hs_token: "{{ matrix_mx_puppet_discord_homeserver_token }}"
+  namespaces:
+      users:
+      - exclusive: true
+        regex: '@discord_.*:{{ matrix_mx_puppet_discord_homeserver_domain|regex_escape }}$'
+      aliases:
+      - exclusive: true
+        regex: '#discord_.*:{{ matrix_mx_puppet_discord_homeserver_domain|regex_escape }}$'
+  url: {{ matrix_mx_puppet_discord_appservice_address }}
+  sender_localpart: discordbot
+  rate_limited: false
+
+matrix_mx_puppet_discord_registration: "{{ matrix_mx_puppet_discord_registration_yaml|from_yaml }}"
