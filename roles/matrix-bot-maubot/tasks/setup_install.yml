@@ -1,13 +1,5 @@
 ---
 
-# If the matrix-synapse role is not used, `matrix_synapse_role_executed` won't exist.
-# We don't want to fail in such cases.
-- name: Fail if matrix-synapse role already executed
-  fail:
-    msg: >-
-      The matrix-bridge-maubot role needs to execute before the matrix-synapse role.
-  when: "matrix_synapse_role_executed|default(False)"
-
 - name: Ensure Maubot image is pulled
   docker_image:
     name: "{{ matrix_maubot_docker_image }}"
@@ -25,6 +17,7 @@
   with_items:
     - "{{ matrix_maubot_base_path }}"
     - "{{ matrix_maubot_config_path }}"
+    - "{{ matrix_maubot_plugin_path }}"
     - "{{ matrix_maubot_data_path }}"
 
 - name: Check if an old database file already exists
@@ -48,14 +41,6 @@
   copy:
     content: "{{ matrix_maubot_configuration|to_nice_yaml }}"
     dest: "{{ matrix_maubot_config_path }}/config.yaml"
-    mode: 0644
-    owner: "{{ matrix_user_username }}"
-    group: "{{ matrix_user_username }}"
-
-- name: Ensure maubot registration.yaml installed
-  copy:
-    content: "{{ matrix_maubot_registration|to_nice_yaml }}"
-    dest: "{{ matrix_maubot_config_path }}/registration.yaml"
     mode: 0644
     owner: "{{ matrix_user_username }}"
     group: "{{ matrix_user_username }}"
