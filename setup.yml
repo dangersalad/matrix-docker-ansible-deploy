@@ -19,6 +19,7 @@
     - matrix-bridge-mx-puppet-discord
     - matrix-bridge-mx-puppet-slack
     - matrix-synapse
+    - matrix-bot-maubot
     - matrix-riot-web
     - matrix-mxisd
     - matrix-dimension

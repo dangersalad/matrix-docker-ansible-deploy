@@ -4,7 +4,7 @@
 matrix_maubot_enabled: true
 
 # See: https://mau.dev/tulir/maubot/container_registry
-matrix_maubot_docker_image: "dock.mau.dev/maubot/maubot:latest"
+matrix_maubot_docker_image: "dangersalad/maubot:latest"
 matrix_maubot_docker_image_force_pull: "{{ matrix_maubot_docker_image.endswith(':latest') }}"
 
 matrix_maubot_base_path: "{{ matrix_base_data_path }}/maubot"
@@ -31,7 +31,7 @@ matrix_maubot_systemd_required_services_list: ['docker.service']
 # List of systemd services that matrix-maubot.service wants
 matrix_maubot_systemd_wanted_services_list: []
 
-matrix_maubot_registration_shared_secret: ''
+matrix_maubot_matrix_registration_shared_secret: ''
 
 # Default configuration template which covers the generic use case.
 # You can customize it by controlling the various variables inside it.
@@ -44,7 +44,7 @@ matrix_maubot_configuration_yaml: |
   # Format examples:
   #   SQLite:   sqlite:///filename.db
   #   Postgres: postgres://username:password@hostname/dbname
-  database: sqlite:///data/maubot.db
+  database: sqlite:////data/maubot.db
   
   plugin_directories:
       # The directory where uploaded new plugins should be stored.
@@ -57,14 +57,14 @@ matrix_maubot_configuration_yaml: |
       # Set to "delete" to delete files immediately.
       trash: /data/trash
       # The directory where plugin databases should be stored.
-      db: /data
+      db: /plugins
   
   server:
       # The IP and port to listen to.
       hostname: 0.0.0.0
       port: 8080
       # Public base URL where the server is visible.
-      public_url: {{ matrix_maubot_homeserver_domain }}
+      public_url: https://{{ matrix_maubot_homeserver_domain }}
       # The base management API path.
       base_path: /_matrix/maubot/v1
       # The base path for the UI.
@@ -86,7 +86,7 @@ matrix_maubot_configuration_yaml: |
           # Client-server API URL
           url: {{ matrix_maubot_homeserver_address }}
           # registration_shared_secret from synapse config
-          secret: {{ matrix_maubot_registration_shared_secret }}
+          secret: {{ matrix_maubot_matrix_registration_shared_secret }}
   
   # List of administrator users. Plaintext passwords will be bcrypted on startup. Set empty password
   # to prevent normal login. Root is a special user that can't have a password and will always exist.
@@ -122,7 +122,7 @@ matrix_maubot_configuration_yaml: |
           file:
               class: logging.handlers.RotatingFileHandler
               formatter: normal
-              filename: ./maubot.log
+              filename: /data/maubot.log
               maxBytes: 10485760
               backupCount: 10
           console:
