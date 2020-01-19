@@ -1,0 +1,73 @@
+---
+
+# If the matrix-synapse role is not used, `matrix_synapse_role_executed` won't exist.
+# We don't want to fail in such cases.
+- name: Fail if matrix-synapse role already executed
+  fail:
+    msg: >-
+      The matrix-bridge-mx-puppet-discord role needs to execute before the matrix-synapse role.
+  when: "matrix_synapse_role_executed|default(False)"
+
+- name: Ensure MX Puppet Discord image is pulled
+  docker_image:
+    name: "{{ matrix_mx_puppet_discord_docker_image }}"
+    source: "{{ 'pull' if ansible_version.major > 2 or ansible_version.minor > 7 else omit }}"
+    force_source: "{{ matrix_mx_puppet_discord_docker_image_force_pull if ansible_version.major > 2 or ansible_version.minor >= 8 else omit }}"
+    force: "{{ omit if ansible_version.major > 2 or ansible_version.minor >= 8 else matrix_mx_puppet_discord_docker_image_force_pull }}"
+
+- name: Ensure MX Puppet Discord paths exist
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0750
+    owner: "{{ matrix_user_username }}"
+    group: "{{ matrix_user_username }}"
+  with_items:
+    - "{{ matrix_mx_puppet_discord_base_path }}"
+    - "{{ matrix_mx_puppet_discord_config_path }}"
+    - "{{ matrix_mx_puppet_discord_data_path }}"
+
+- name: Check if an old database file already exists
+  stat:
+    path: "{{ matrix_mx_puppet_discord_base_path }}/mx-puppet-discord.db"
+  register: matrix_mx_puppet_discord_stat_database
+
+- name: (Data relocation) Ensure matrix-mx-puppet-discord.service is stopped
+  service:
+    name: matrix-mx-puppet-discord
+    state: stopped
+    daemon_reload: yes
+  failed_when: false
+  when: "matrix_mx_puppet_discord_stat_database.stat.exists"
+
+- name: (Data relocation) Move mx-puppet-discord database file to ./data directory
+  command: "mv {{ matrix_mx_puppet_discord_base_path }}/mx-puppet-discord.db {{ matrix_mx_puppet_discord_data_path }}/mx-puppet-discord.db"
+  when: "matrix_mx_puppet_discord_stat_database.stat.exists"
+
+- name: Ensure mx-puppet-discord config.yaml installed
+  copy:
+    content: "{{ matrix_mx_puppet_discord_configuration|to_nice_yaml }}"
+    dest: "{{ matrix_mx_puppet_discord_config_path }}/config.yaml"
+    mode: 0644
+    owner: "{{ matrix_user_username }}"
+    group: "{{ matrix_user_username }}"
+
+- name: Ensure mx-puppet-discord registration.yaml installed
+  copy:
+    content: "{{ matrix_mx_puppet_discord_registration|to_nice_yaml }}"
+    dest: "{{ matrix_mx_puppet_discord_config_path }}/registration.yaml"
+    mode: 0644
+    owner: "{{ matrix_user_username }}"
+    group: "{{ matrix_user_username }}"
+
+- name: Ensure matrix-mx-puppet-discord.service installed
+  template:
+    src: "{{ role_path }}/templates/systemd/matrix-mx-puppet-discord.service.j2"
+    dest: "/etc/systemd/system/matrix-mx-puppet-discord.service"
+    mode: 0644
+  register: matrix_mx_puppet_discord_systemd_service_result
+
+- name: Ensure systemd reloaded after matrix-mx-puppet-discord.service installation
+  service:
+    daemon_reload: yes
+  when: "matrix_mx_puppet_discord_systemd_service_result.changed"
