@@ -4,22 +4,18 @@
 matrix_maubot_enabled: true
 
 # See: https://mau.dev/tulir/maubot/container_registry
-matrix_maubot_docker_image: "dangersalad/maubot:latest"
+matrix_maubot_docker_image: "dock.mau.dev/maubot/maubot:latest"
 matrix_maubot_docker_image_force_pull: "{{ matrix_maubot_docker_image.endswith(':latest') }}"
 
 matrix_maubot_base_path: "{{ matrix_base_data_path }}/maubot"
 matrix_maubot_config_path: "{{ matrix_maubot_base_path }}/config"
+matrix_maubot_plugin_path: "{{ matrix_maubot_base_path }}/plugins"
 matrix_maubot_data_path: "{{ matrix_maubot_base_path }}/data"
 
-# MX Puppet Discord public endpoint to log in to discord
-# Use an uuid so it's not easily discoverable.
-# Example: /741a0483-ba17-4682-9900-30bd7269f1cc
-matrix_maubot_public_endpoint: ''
+matrix_maubot_public_endpoint: "/_matrix/maubot"
 
 matrix_maubot_homeserver_address: 'http://matrix-synapse:8008'
 matrix_maubot_homeserver_domain: '{{ matrix_domain }}'
-matrix_maubot_appservice_address: 'http://matrix-maubot:8080'
-matrix_maubot_appservice_public_external: 'https://{{ matrix_server_fqn_matrix }}{{ matrix_maubot_public_endpoint }}'
 
 # Controls whether the matrix-discord container exposes its HTTP port (tcp/8080 in the container).
 #
@@ -35,11 +31,7 @@ matrix_maubot_systemd_required_services_list: ['docker.service']
 # List of systemd services that matrix-maubot.service wants
 matrix_maubot_systemd_wanted_services_list: []
 
-matrix_maubot_appservice_token: ''
-matrix_maubot_homeserver_token: ''
-
-# Can be set to enable automatic double-puppeting via Shared Secret Auth (https://github.com/devture/matrix-synapse-shared-secret-auth).
-matrix_maubot_login_shared_secret: ''
+matrix_maubot_registration_shared_secret: ''
 
 # Default configuration template which covers the generic use case.
 # You can customize it by controlling the various variables inside it.
@@ -47,80 +39,105 @@ matrix_maubot_login_shared_secret: ''
 # For a more advanced customization, you can extend the default (see `matrix_maubot_configuration_extension_yaml`)
 # or completely replace this variable with your own template.
 matrix_maubot_configuration_yaml: |
-  #jinja2: lstrip_blocks: "True"
-  bridge:
-    # Port to host the bridge on
-    # Used for communication between the homeserver and the bridge
-    port: 8080
-    # The host connections to the bridge's webserver are allowed from
-    bindAddress: 0.0.0.0
-    # Public domain of the homeserver
-    domain: {{ matrix_maubot_homeserver_domain }}
-    # Reachable URL of the Matrix homeserver
-    homeserverUrl: {{ matrix_maubot_homeserver_address }}
-    # shared secret for double puppeting
-    loginSharedSecretMap:
-      {{ matrix_maubot_homeserver_domain }}: {{ matrix_maubot_login_shared_secret|to_json }}
+  # The full URI to the database. SQLite and Postgres are fully supported.
+  # Other DBMSes supported by SQLAlchemy may or may not work.
+  # Format examples:
+  #   SQLite:   sqlite:///filename.db
+  #   Postgres: postgres://username:password@hostname/dbname
+  database: sqlite:///data/maubot.db
   
-  presence:
-    # Bridge Discord online/offline status
-    enabled: true
-    # How often to send status to the homeserver in milliseconds
-    interval: 500
+  plugin_directories:
+      # The directory where uploaded new plugins should be stored.
+      upload: /plugins
+      # The directories from which plugins should be loaded.
+      # Duplicate plugin IDs will be moved to the trash.
+      load:
+      - /plugins
+      # The directory where old plugin versions and conflicting plugins should be moved.
+      # Set to "delete" to delete files immediately.
+      trash: /data/trash
+      # The directory where plugin databases should be stored.
+      db: /data
   
-  provisioning:
-    # Regex of Matrix IDs allowed to use the puppet bridge
-    whitelist:
-      # Allow a specific user
-      #- "@user:server\\.com"
-      # Allow users on a specific homeserver
-      - '@.*:{{ matrix_maubot_homeserver_domain | regex_escape }}'
-      # Allow anyone
-      #- ".*"
-    # Regex of Matrix IDs forbidden from using the puppet bridge
-    #blacklist:
-      # Disallow a specific user
-      #- "@user:server\\.com"
-      # Disallow users on a specific homeserver
-      #- "@.*:yourserver\\.com"
+  server:
+      # The IP and port to listen to.
+      hostname: 0.0.0.0
+      port: 8080
+      # Public base URL where the server is visible.
+      public_url: {{ matrix_maubot_homeserver_domain }}
+      # The base management API path.
+      base_path: /_matrix/maubot/v1
+      # The base path for the UI.
+      ui_base_path: /_matrix/maubot
+      # The base path for plugin endpoints. The instance ID will be appended directly.
+      plugin_base_path: /_matrix/maubot/plugin/
+      # Override path from where to load UI resources.
+      # Set to false to using pkg_resources to find the path.
+      override_resource_path: false
+      # The base appservice API path. Use / for legacy appservice API and /_matrix/app/v1 for v1.
+      appservice_base_path: /_matrix/app/v1
+      # The shared secret to sign API access tokens.
+      # Set to "generate" to generate and save a new token at startup.
+      unshared_secret: generate
   
-  database:
-    # Use Postgres as a database backend
-    # If set, will be used instead of SQLite3
-    # Connection string to connect to the Postgres instance
-    # with username "user", password "pass", host "localhost" and database name "dbname".
-    # Modify each value as necessary
-    #connString: "postgres://user:pass@localhost/dbname?sslmode=disable"
-    # Use SQLite3 as a database backend
-    # The name of the database file
-    filename: /data/maubot.db
+  # Shared registration secrets to allow registering new users from the management UI
+  registration_secrets:
+      {{ matrix_maubot_homeserver_domain }}:
+          # Client-server API URL
+          url: {{ matrix_maubot_homeserver_address }}
+          # registration_shared_secret from synapse config
+          secret: {{ matrix_maubot_registration_shared_secret }}
   
+  # List of administrator users. Plaintext passwords will be bcrypted on startup. Set empty password
+  # to prevent normal login. Root is a special user that can't have a password and will always exist.
+  admins:
+      root: ""
+  
+  # API feature switches.
+  api_features:
+      login: true
+      plugin: true
+      plugin_upload: true
+      instance: true
+      instance_database: true
+      client: true
+      client_proxy: true
+      client_auth: true
+      dev_open: true
+      log: true
+  
+  # Python logging configuration.
+  #
+  # See section 16.7.2 of the Python documentation for more info:
+  # https://docs.python.org/3.6/library/logging.config.html#configuration-dictionary-schema
   logging:
-    # Log level of console output
-    # Allowed values starting with most verbose:
-    # silly, verbose, info, warn, error
-    console: info
-    # Date and time formatting
-    lineDateFormat: MMM-D HH:mm:ss.SSS
-    # Logging files
-    # Log files are rotated daily by default
-    files:
-      # Log file path
-      - file: "/data/bridge.log"
-        # Log level for this file
-        # Allowed values starting with most verbose:
-        # silly, debug, verbose, info, warn, error
-        level: info
-        # Date and time formatting
-        datePattern: YYYY-MM-DD
-        # Maximum number of logs to keep.
-        # This can be a number of files or number of days.
-        # If using days, add 'd' as a suffix
-        maxFiles: 14d
-        # Maximum size of the file after which it will rotate. This can be a
-        # number of bytes, or units of kb, mb, and gb. If using the units, add
-        # 'k', 'm', or 'g' as the suffix
-        maxSize: 50m
+      version: 1
+      formatters:
+          colored:
+              (): maubot.lib.color_log.ColorFormatter
+              format: "[%(asctime)s] [%(levelname)s@%(name)s] %(message)s"
+          normal:
+              format: "[%(asctime)s] [%(levelname)s@%(name)s] %(message)s"
+      handlers:
+          file:
+              class: logging.handlers.RotatingFileHandler
+              formatter: normal
+              filename: ./maubot.log
+              maxBytes: 10485760
+              backupCount: 10
+          console:
+              class: logging.StreamHandler
+              formatter: colored
+      loggers:
+          maubot:
+              level: DEBUG
+          mautrix:
+              level: DEBUG
+          aiohttp:
+              level: INFO
+      root:
+          level: DEBUG
+          handlers: [file, console]
   
   
 matrix_maubot_configuration_extension_yaml: |
@@ -138,19 +155,3 @@ matrix_maubot_configuration_extension: "{{ matrix_maubot_configuration_extension
 # You most likely don't need to touch this variable. Instead, see `matrix_maubot_configuration_yaml`.
 matrix_maubot_configuration: "{{ matrix_maubot_configuration_yaml|from_yaml|combine(matrix_maubot_configuration_extension, recursive=True) }}"
 
-matrix_maubot_registration_yaml: |
-  id: discord
-  as_token: "{{ matrix_maubot_appservice_token }}"
-  hs_token: "{{ matrix_maubot_homeserver_token }}"
-  namespaces:
-      users:
-      - exclusive: true
-        regex: '@discord_.*:{{ matrix_maubot_homeserver_domain|regex_escape }}$'
-      aliases:
-      - exclusive: true
-        regex: '#discord_.*:{{ matrix_maubot_homeserver_domain|regex_escape }}$'
-  url: {{ matrix_maubot_appservice_address }}
-  sender_localpart: discordbot
-  rate_limited: false
-
-matrix_maubot_registration: "{{ matrix_maubot_registration_yaml|from_yaml }}"
